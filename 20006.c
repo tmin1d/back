@@ -1,69 +1,86 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
-char player_name[17], char_team[300][300][17], char_temp[17];
+int room_num = 0;
+int room_infor[300] = { 0 };
+int room_list_lv[300][300] = { 0 };
+char room_list_name[300][300][17];
 
 int main() {
-    int player_num, team_num, player_level, int_team[300][300], team_cnt = 0, team_idx[300] = { 0, }, i, j, k, check = 0, int_temp;
 
-    scanf_s("%d %d", &player_num, &team_num);
+	int p_lv;
+	char p_name[17];
 
-    for (i = 0; i < player_num; i++) {
-        scanf_s("%d %s", &player_level, player_name, 17);
+	int p, m;
+	scanf("%d %d", &p, &m);
 
-        if (i == 0) {
-            int_team[0][0] = player_level;
-            strncpy_s(char_team[0][0], sizeof(char_team[0][0]), player_name, 17);  
-            team_cnt++;
-            team_idx[0]++;
-        }
-        else {
-            check = 0; 
-            for (j = 0; j < team_cnt; j++) {
-                int level_gap = int_team[j][0] - player_level;
-                if ((level_gap >= -10 && level_gap <= 10) && team_idx[j] < team_num) {
-                    int_team[j][team_idx[j]] = player_level;
-                    strncpy_s(char_team[j][team_idx[j]], sizeof(char_team[j][team_idx[j]]), player_name, 17);  
-                    team_idx[j]++;
-                    check = 1;  
-                    break;
-                }
-            }
+	for (int i = 0; i < p; i++) {
+		scanf("%d %s", &p_lv, &p_name, sizeof(p_name));
 
-            if (check == 0) {
-                int_team[team_cnt][0] = player_level;
-                strncpy_s(char_team[team_cnt][0], sizeof(char_team[team_cnt][0]), player_name, 17); 
-                team_idx[team_cnt]++;
-                team_cnt++;
-            }
-        }
-    }
+		int d = 0;
 
-    for (i = 0; i < team_cnt; i++) {
-        for (j = 0; j < team_idx[i]; j++) {
-            for (k = j; k < team_idx[i] - 1; k++) {
-                if (strcmp(char_team[i][j], char_team[i][k + 1]) > 0) {
-                    strncpy_s(char_temp, sizeof(char_temp), char_team[i][j], 17);  
-                    strncpy_s(char_team[i][j], sizeof(char_team[i][j]), char_team[i][k + 1], 17); 
-                    strncpy_s(char_team[i][k + 1], sizeof(char_team[i][k + 1]), char_temp, 17);  
+		for (int j = 0; j < p; j++) {
+			if (room_list_lv[j][0] == 0) {
+				room_list_lv[j][0] = p_lv;
+				strcpy(room_list_name[j][0], p_name);
+				room_num += 1;
+				room_infor[j] += 1;
+				break;
+			}
+			else {
+				for (int k = 1; k < m; k++) {
+					if (room_list_lv[j][k] == 0 && abs(room_list_lv[j][0] - p_lv) <= 10) {
+						room_list_lv[j][k] = p_lv;
+						strcpy(room_list_name[j][k], p_name);
+						room_infor[j] += 1;
+						d += 1;
+						break;
+					}
+				}
+				if (d == 1) {
+					break;
+				}
+			}
+		}
+	}
 
-                    int_temp = int_team[i][j];
-                    int_team[i][j] = int_team[i][k + 1];
-                    int_team[i][k + 1] = int_temp;
-                }
-            }
-        }
-    }
+	int temp_lv = 0;
+	char temp_name[17] = { 'a' };
 
-    for (i = 0; i < team_cnt; i++) {
-        if (team_idx[i] == team_num)
-            printf("Started!\n");
-        else
-            printf("Waiting!\n");
+	for (int i = 0; i < room_num; i++) {
+		for (int f = 0; f < room_infor[i]; f++) {
+			for (int g = f + 1; g < room_infor[i]; g++) {
+				if (strcmp(room_list_name[i][f], room_list_name[i][g]) > 0) {
+					strcpy(temp_name, room_list_name[i][f]);
+					strcpy(room_list_name[i][f], room_list_name[i][g]);
+					strcpy(room_list_name[i][g], temp_name);
+					temp_lv = room_list_lv[i][f];
+					room_list_lv[i][f] = room_list_lv[i][g];
+					room_list_lv[i][g] = temp_lv;
+				}
+			}
+		}
+	}
 
-        for (j = 0; j < team_idx[i]; j++)
-            printf("%d %s\n", int_team[i][j], char_team[i][j]);
-    }
-
-    return 0;
+	for (int re = 0; re < p; re++) {
+		for (int re1 = 0; re1 < m; re1++) {
+			if (room_list_lv[re][re1] == 0) {
+				break;
+			}
+			else {
+				if (re1 == 0 && room_infor[re] == m) {
+					printf("Started!\n");
+					printf("%d %s\n", room_list_lv[re][re1], room_list_name[re][re1]);
+				}
+				else if (room_infor[re] < m && re1 == 0) {
+					printf("Waiting!\n");
+					printf("%d %s\n", room_list_lv[re][re1], room_list_name[re][re1]);
+				}
+				else {
+					printf("%d %s\n", room_list_lv[re][re1], room_list_name[re][re1]);
+				}
+			}
+		}
+	}
 }
